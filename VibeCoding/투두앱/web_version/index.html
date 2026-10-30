@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Tasks - 할 일 관리 (Desktop)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 데스크톱 전체 화면 레이아웃: 좌측 사이드바 + 우측 메인 -->
+  <div class="layout">
+    <aside class="sidebar">
+      <header class="brand">
+        <h1>✅ My Tasks</h1>
+        <button class="theme-toggle" id="themeToggle" role="switch" aria-checked="false" aria-label="다크 모드">
+          <span class="knob"></span>
+        </button>
+      </header>
+
+      <nav class="filters" aria-label="카테고리 필터">
+        <div class="side-title">카테고리</div>
+        <button class="filter-btn active" data-filter="all"><span class="dot"></span>전체<span class="count">0</span><kbd>Alt+1</kbd></button>
+        <button class="filter-btn" data-filter="work" style="--cat:#4A90E2"><span class="dot"></span>업무<span class="count">0</span><kbd>Alt+2</kbd></button>
+        <button class="filter-btn" data-filter="personal" style="--cat:#27AE60"><span class="dot"></span>개인<span class="count">0</span><kbd>Alt+3</kbd></button>
+        <button class="filter-btn" data-filter="study" style="--cat:#8E44AD"><span class="dot"></span>공부<span class="count">0</span><kbd>Alt+4</kbd></button>
+      </nav>
+
+      <section class="side-block">
+        <div class="side-title">🤖 스마트 분류</div>
+        <button type="button" class="side-btn" id="reclassifyBtn">🔄 자동 재분류</button>
+        <button type="button" class="side-btn" id="autoSettingsBtn">⚙️ 분류 설정</button>
+      </section>
+
+      <section class="side-block">
+        <div class="side-title">데이터</div>
+        <button type="button" class="side-btn" id="exportBtn">⬇ 내보내기 (JSON)</button>
+        <button type="button" class="side-btn" id="importBtn">⬆ 가져오기</button>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+      </section>
+
+      <div class="quote">
+        <div class="side-title">오늘의 격언</div>
+        <p>“<span id="quoteText"></span>”</p>
+        <button class="icon-btn" id="quoteRefresh" title="다른 격언 보기">🔄 새 격언</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- 진행률 대시보드 (가로 카드) -->
+      <section class="dashboard">
+        <div class="stat-card total">
+          <div class="dash-label">전체 진행률</div>
+          <div class="dash-value" id="totalProgressText">0/0 완료 (0%)</div>
+          <div class="progress"><span id="totalProgressBar"></span></div>
+        </div>
+        <div class="stat-card">
+          <div class="dash-label">남은 할 일</div>
+          <div class="big" id="remainingBadge">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="dash-label">오늘 추가</div>
+          <div class="big" id="todayCount">0개</div>
+        </div>
+        <div class="mini-progress" data-cat="work" style="--cat:#4A90E2">
+          <div class="mini-head"><span>업무</span><span class="mini-count">0/0</span></div>
+          <div class="mini-bar"><span></span></div>
+        </div>
+        <div class="mini-progress" data-cat="personal" style="--cat:#27AE60">
+          <div class="mini-head"><span>개인</span><span class="mini-count">0/0</span></div>
+          <div class="mini-bar"><span></span></div>
+        </div>
+        <div class="mini-progress" data-cat="study" style="--cat:#8E44AD">
+          <div class="mini-head"><span>공부</span><span class="mini-count">0/0</span></div>
+          <div class="mini-bar"><span></span></div>
+        </div>
+      </section>
+
+      <form class="todo-form" id="todoForm" autocomplete="off">
+        <input type="text" id="todoInput" placeholder="새로운 할 일을 입력하세요... (Alt+N)" maxlength="100">
+        <select id="categorySelect" aria-label="카테고리">
+          <option value="work">업무</option>
+          <option value="personal" selected>개인</option>
+          <option value="study">공부</option>
+        </select>
+        <button type="submit" class="primary-btn">+ 추가</button>
+      </form>
+
+      <div class="toolbar">
+        <div class="search">
+          <span>🔍</span>
+          <input type="search" id="searchInput" placeholder="할 일 검색..." aria-label="할 일 검색">
+        </div>
+        <label class="sort">정렬
+          <select id="sortSelect">
+            <option value="newest">최신순</option>
+            <option value="oldest">오래된순</option>
+            <option value="category">카테고리순</option>
+            <option value="status">완료 상태순</option>
+            <option value="manual">직접 정렬 (드래그)</option>
+          </select>
+        </label>
+        <button type="button" class="danger-btn" id="clearCompletedBtn">완료된 항목 삭제</button>
+      </div>
+
+      <ul class="todo-list" id="todoList"></ul>
+      <div class="empty" id="emptyState" hidden>
+        <div class="empty-icon">📝</div>
+        <p>할 일이 없습니다. 추가해보세요!</p>
+      </div>
+
+      <footer class="hint">더블클릭: 수정 (Enter 저장 · Esc 취소) · Alt+N: 새 할 일 · Alt+1~4: 카테고리 필터</footer>
+    </main>
+  </div>
+
+  <div class="modal" id="modal" aria-modal="true" role="dialog">
+    <div class="modal-box">
+      <h3 id="modalTitle"></h3>
+      <div id="modalBody"></div>
+      <div class="modal-actions">
+        <button type="button" class="ghost-btn" id="modalCancel">취소</button>
+        <button type="button" class="primary-btn" id="modalOk">확인</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

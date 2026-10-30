@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지식왕 도전 - 상식 퀴즈 게임</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="card" id="app">
+
+    <!-- 1. 시작 화면 -->
+    <section class="screen active" id="startScreen">
+      <h1 class="title">🎯 퀴즈 게임</h1>
+      <p class="subtitle" id="startSubtitle">4개 카테고리, 40개의 도전적인 문제</p>
+      <div class="chips" id="categoryChips"></div>
+      <button class="btn primary big" id="startBtn">게임 시작</button>
+      <button class="btn link" id="showRankingBtn">🏆 명예의 전당 보기</button>
+    </section>
+
+    <!-- 2. 게임 모드 선택 -->
+    <section class="screen" id="modeScreen">
+      <h2 class="title sm">게임 모드 선택</h2>
+      <div class="modes">
+        <button class="mode-card" data-mode="all">
+          <strong>전체 도전</strong>
+          <small id="modeAllDesc">모든 카테고리 40문제</small>
+        </button>
+        <button class="mode-card" data-mode="category">
+          <strong>카테고리별</strong>
+          <small>선택 카테고리 10문제</small>
+        </button>
+        <button class="mode-card" data-mode="speed">
+          <strong>스피드 퀴즈</strong>
+          <small>20문제 · 문제당 15초 제한</small>
+        </button>
+      </div>
+      <div class="category-pick" id="categoryPick" hidden>
+        <p>도전할 카테고리를 선택하세요</p>
+        <div class="chips" id="categoryPickChips"></div>
+      </div>
+      <div class="score-rules">
+        <h3>📊 점수 규칙</h3>
+        <ul>
+          <li>기본 10점 × 난이도 배수 (쉬움 1배 · 보통 1.5배 · 어려움 2배)</li>
+          <li>⚡ 10초 안에 정답: +3점 &nbsp;·&nbsp; 💡 힌트 미사용: +2점</li>
+          <li>🔥 연속 정답 콤보: 3연속 +2 · 5연속 +5 · 10연속 +10</li>
+          <li>힌트 사용 시 −2점 (오답 보기 2개 제거)</li>
+        </ul>
+      </div>
+      <button class="btn link" id="backToStart">← 처음으로</button>
+    </section>
+
+    <!-- 3. 퀴즈 화면 -->
+    <section class="screen" id="quizScreen">
+      <header class="quiz-header">
+        <span id="progressText">1 / 40</span>
+        <span id="scoreText">점수: 0</span>
+        <span class="timer" id="timerText" hidden>15초</span>
+        <span class="combo" id="comboText">🔥 0</span>
+      </header>
+      <div class="progress"><span id="progressBar"></span></div>
+      <div class="quiz-body">
+        <div class="q-meta">
+          <span class="badge" id="qCategory">한국사</span>
+          <span class="badge diff" id="qDifficulty">쉬움</span>
+        </div>
+        <h2 class="question" id="qText"></h2>
+        <div class="options" id="options"></div>
+        <div class="hint-box" id="hintBox" hidden></div>
+        <div class="quiz-actions">
+          <button class="btn hint" id="hintBtn">💡 힌트 사용 (-2점)</button>
+          <button class="btn link danger" id="quitBtn">그만하기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 결과 화면 -->
+    <section class="screen" id="resultScreen">
+      <h2 class="title">🏆 퀴즈 완료!</h2>
+      <p class="subtitle" id="resultMode"></p>
+      <div class="stats">
+        <div class="stat"><b id="finalScore">0</b><span>최종 점수</span></div>
+        <div class="stat"><b id="finalCorrect">0 / 0</b><span>정답 개수</span></div>
+        <div class="stat"><b id="finalRate">0%</b><span>정답률</span></div>
+      </div>
+      <div class="extra-stats" id="extraStats"></div>
+      <ul class="cat-results" id="catResults"></ul>
+
+      <form class="save-rank" id="saveRankForm">
+        <input type="text" id="playerName" maxlength="12" placeholder="이름을 입력하고 순위를 기록하세요" required>
+        <button class="btn primary" type="submit">기록하기</button>
+      </form>
+      <div class="ranking" id="rankingBox"></div>
+
+      <div class="result-actions">
+        <button class="btn primary" id="restartBtn">다시 시작</button>
+        <button class="btn" id="homeBtn">처음으로</button>
+      </div>
+    </section>
+
+    <!-- 5. 명예의 전당 -->
+    <section class="screen" id="rankingScreen">
+      <h2 class="title">🏆 명예의 전당</h2>
+      <div class="tabs" id="rankTabs">
+        <button class="tab active" data-mode="all">전체 도전</button>
+        <button class="tab" data-mode="category">카테고리별</button>
+        <button class="tab" data-mode="speed">스피드 퀴즈</button>
+      </div>
+      <div class="ranking" id="rankingFull"></div>
+      <div class="result-actions">
+        <button class="btn" id="rankBackBtn">← 처음으로</button>
+        <button class="btn link danger" id="resetRankBtn">기록 초기화</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 정답/오답 피드백 -->
+  <div class="overlay" id="feedback" role="dialog" aria-modal="true">
+    <div class="feedback-box">
+      <div class="fb-icon" id="fbIcon">✅</div>
+      <h3 id="fbTitle">정답입니다!</h3>
+      <p id="fbText"></p>
+      <div class="fb-points" id="fbPoints"></div>
+      <button class="btn success" id="nextBtn">다음 문제</button>
+    </div>
+  </div>
+
+  <script src="quiz-data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
